@@ -1,6 +1,6 @@
 package com.example.PSICOLOGO.security;
 
-import com.example.PSICOLOGO.modelos.UserRepository;
+import com.example.PSICOLOGO.modelos.PacientRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final PacientRepository pacientRepository;
 
 
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
-        return userRepository.findByEmail(userEmail)
+        return pacientRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário Não Encontrado"));
     }
 }

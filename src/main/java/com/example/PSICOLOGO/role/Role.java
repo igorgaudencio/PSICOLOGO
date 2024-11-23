@@ -1,7 +1,7 @@
 package com.example.PSICOLOGO.role;
 
 
-import com.example.PSICOLOGO.modelos.User;
+import com.example.PSICOLOGO.modelos.Pacient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,7 +30,7 @@ public class Role {
 
     @ManyToMany(mappedBy = "roles")
     @JsonIgnore
-    private List<User> users;
+    private List<Pacient> pacients;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

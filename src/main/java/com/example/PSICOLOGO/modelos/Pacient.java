@@ -17,9 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Nodes.collect;
-import static sun.awt.image.MultiResolutionCachedImage.map;
 
 
 @Getter
@@ -28,9 +25,9 @@ import static sun.awt.image.MultiResolutionCachedImage.map;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "user")
+@Table(name = "pacient")
 @EntityListeners(AuditingEntityListener.class)
-public class User implements UserDetails, Principal {
+public class Pacient implements UserDetails, Principal {
 
     @Id
     @GeneratedValue
@@ -84,7 +81,7 @@ public class User implements UserDetails, Principal {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true);
+        return true;
     }
 
     @Override

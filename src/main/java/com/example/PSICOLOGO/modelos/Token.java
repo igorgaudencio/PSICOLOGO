@@ -3,7 +3,6 @@ package com.example.PSICOLOGO.modelos;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +24,7 @@ public class Token {
 
     @ManyToOne
     @JoinColumn(name = "userId", nullable = false)
-    private User user;
+    private Pacient pacient;
 
 
 }
