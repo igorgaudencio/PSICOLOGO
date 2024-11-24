@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "pacient")
+@Table(name = "user")
 @EntityListeners(AuditingEntityListener.class)
-public class Pacient implements UserDetails, Principal {
+public class User implements UserDetails, Principal {
 
     @Id
     @GeneratedValue

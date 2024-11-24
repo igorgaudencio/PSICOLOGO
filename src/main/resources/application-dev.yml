@@ -34,3 +34,6 @@ application:
     jwt:
       secret-key: senha
       expiration: 720000
+
+server:
+  port: 8080
