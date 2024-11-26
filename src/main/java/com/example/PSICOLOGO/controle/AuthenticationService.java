@@ -1,13 +1,18 @@
 package com.example.PSICOLOGO.controle;
 
 
+import com.example.PSICOLOGO.email.EmailService;
+import com.example.PSICOLOGO.email.EmailTemplateName;
 import com.example.PSICOLOGO.modelos.Token;
 import com.example.PSICOLOGO.modelos.TokenRepository;
 import com.example.PSICOLOGO.modelos.User;
 import com.example.PSICOLOGO.modelos.UserRepository;
 import com.example.PSICOLOGO.role.RoleRepository;
 
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,17 +28,19 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final TokenRepository tokenRepository;
-
+    private final EmailService emailService;
+@Value("${application.mailing.frontend.activation-url}")
+    private String activationUrl;
     
 
-    public void register(RegistrationRequest request){
+    public void register(RegistrationRequest request) throws MessagingException {
         var userRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new IllegalStateException("ROLE USER wat not initialized"));
         var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
-                .password("")
+                .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(false)
                 .roles(List.of(userRole))
@@ -44,9 +51,18 @@ public class AuthenticationService {
 
     }
 
-    private void sendValidationEmail(User user) {
+    private void sendValidationEmail(User user) throws MessagingException {
         var newToken = generateAndSaveActivationToken(user);
-        //enviar email
+
+        emailService.sendEmail(
+                user.getEmail(),
+                user.fullName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                (String) newToken,
+                "Account activation"
+        );
+
     }
 
     private Object generateAndSaveActivationToken(User user) {

@@ -34,6 +34,10 @@ application:
     jwt:
       secret-key: senha
       expiration: 720000
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+
 
 server:
   port: 8080
