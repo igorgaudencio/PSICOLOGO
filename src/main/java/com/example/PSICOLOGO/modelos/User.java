@@ -17,8 +17,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -35,8 +33,10 @@ public class User implements UserDetails, Principal {
     private String firstName;
     private String lastName;
     private LocalDate birthDate;
+
     @Column(unique = true)
     private String email;
+
     private String password;
     private boolean accountLocked;
     private boolean enabled;
@@ -47,10 +47,10 @@ public class User implements UserDetails, Principal {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createDate;
+
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -59,6 +59,7 @@ public class User implements UserDetails, Principal {
                 .map(r -> new SimpleGrantedAuthority(r.getName()))
                 .collect(Collectors.toList());
     }
+
     @Override
     public String getPassword() {
         return password;
