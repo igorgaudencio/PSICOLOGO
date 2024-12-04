@@ -3,6 +3,8 @@ package com.example.PSICOLOGO.controle;
 import com.example.PSICOLOGO.modelos.Agenda;
 import com.example.PSICOLOGO.modelos.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -34,4 +36,15 @@ public class AgendamentoController {
     public List<Agenda> listarAgendas() {
         return agendamentoService.listarAgendas();
     }
+
+    @PostMapping("/adicionar/{userId}")
+    public ResponseEntity<String> adicionarPacienteFila(@PathVariable Long userId) {
+        try {
+            agendamentoService.adicionarUserFila(userId);
+            return ResponseEntity.ok("Paciente adicionado à fila.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
 }

@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/book_social_network
-    username: username
-    password: password
+    url: jdbc:postgresql://psicologo:5433/psicologo
+    username: igor
+    password: igor
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -28,6 +28,9 @@ spring:
         connectiontimout: 5000
         timeout:
         writetimeout: 5000
+  task:
+    scheduling:
+      cron: 0 0 8 * * ?
 
 application:
   security:
