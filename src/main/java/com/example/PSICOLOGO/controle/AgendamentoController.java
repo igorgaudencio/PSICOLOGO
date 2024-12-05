@@ -17,6 +17,7 @@ public class AgendamentoController {
     @Autowired
     private AgendamentoService agendamentoService;
 
+
     @PostMapping("/users")
     public User cadastrarUser(
             @RequestParam String firstName,
@@ -26,19 +27,29 @@ public class AgendamentoController {
         return agendamentoService.cadastrarUser(firstName, lastName, email, password);
     }
 
+
     @PostMapping("/agendas")
-    public Agenda cadastrarAgenda(@RequestParam Long userId, @RequestParam String dataHora) {
-        LocalDateTime dateTime = LocalDateTime.parse(dataHora);
-        return agendamentoService.cadastrarAgenda(userId, dateTime);
+    public ResponseEntity<?> cadastrarAgenda(
+            @RequestParam Integer userId,
+            @RequestParam String dataHora) {
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(dataHora);
+            Agenda agenda = agendamentoService.cadastrarAgenda(userId, dateTime);
+            return ResponseEntity.ok(agenda);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
+
 
     @GetMapping("/agendas")
     public List<Agenda> listarAgendas() {
         return agendamentoService.listarAgendas();
     }
 
+
     @PostMapping("/adicionar/{userId}")
-    public ResponseEntity<String> adicionarPacienteFila(@PathVariable Long userId) {
+    public ResponseEntity<String> adicionarUserFila(@PathVariable Integer userId) {
         try {
             agendamentoService.adicionarUserFila(userId);
             return ResponseEntity.ok("Paciente adicionado à fila.");
@@ -47,4 +58,22 @@ public class AgendamentoController {
         }
     }
 
+
+    @GetMapping("/agendas/horario")
+    public ResponseEntity<List<Agenda>> listarAgendas(@RequestParam String dataHora) {
+        LocalDateTime dateTime = LocalDateTime.parse(dataHora);
+        List<Agenda> agendas = agendamentoService.listarAgendas(dateTime);
+        return ResponseEntity.ok(agendas);
+    }
+
+
+    @PostMapping("/agendas/checkin/{agendaId}")
+    public ResponseEntity<String> realizarCheckIn(@PathVariable Long agendaId) {
+        try {
+            agendamentoService.realizarCheckIn(agendaId);
+            return ResponseEntity.ok("Check-in realizado com sucesso.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

@@ -6,7 +6,6 @@ import com.example.PSICOLOGO.modelos.User;
 import com.example.PSICOLOGO.modelos.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,77 +23,75 @@ public class AgendamentoService {
     @Autowired
     private AgendaRepository agendaRepository;
 
+    private static final int MAX_VAGAS = 8;
     private final Queue<User> filaUser = new LinkedList<>();
-    private AgendamentoService agendamentoService;
+
 
     public User cadastrarUser(String firstName, String lastName, String email, String password) {
-        User user = User.builder()
-                .firstName(firstName)
-                .lastName(lastName)
-                .email(email)
-                .password(password)  // Aqui você pode aplicar hash na senha
-                .enabled(true)
-                .accountLocked(false)
-                .build();
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPassword(password);
+        user.setEnabled(true);
+        user.setAccountLocked(false);
+
         return userRepository.save(user);
     }
 
-    public Agenda cadastrarAgenda(Long userId, LocalDateTime dataHora) {
-        User user = userRepository.findById(Math.toIntExact(userId))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+
+    public Agenda cadastrarAgenda(Integer userId, LocalDateTime dataHora) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
         if (agendaRepository.existsByUserAndDataHora(user, dataHora)) {
-            throw new IllegalArgumentException("Já existe um agendamento para este horário.");
+            throw new IllegalArgumentException("Usuário já possui uma vaga reservada para este horário.");
+        }
+
+        long vagasOcupadas = agendaRepository.countByDataHora(dataHora);
+        if (vagasOcupadas >= MAX_VAGAS) {
+            throw new IllegalArgumentException("Todas as vagas para este horário estão ocupadas.");
         }
 
         Agenda agenda = new Agenda();
         agenda.setUser(user);
         agenda.setDataHora(dataHora);
+        agenda.setVaga((int) (vagasOcupadas + 1));
+        agenda.setCheckIn(false);
+
         return agendaRepository.save(agenda);
     }
 
-    @Scheduled(cron = "${spring.task.scheduling.cron}")
-    public void agendaTarefas() {
-        log.info("Agendado e executado em {}", LocalDateTime.now());
-    }
-
-
-    public Agenda agendar(Long userId, LocalDateTime dataHora) {
-        return cadastrarAgenda(userId, dataHora);
-    }
 
     public List<Agenda> listarAgendas() {
         return agendaRepository.findAll();
     }
 
-    public void adicionarUserFila(Long userId) {
-        User user = userRepository
-                .findById(Math.toIntExact(userId))
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
+    public void adicionarUserFila(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
         filaUser.offer(user);
-        log.info("Paciente adicionado na fila {}", user.getFirstName());
+        log.info("Paciente adicionado na fila: {}", user.getFirstName());
     }
 
 
-
-    @Scheduled(cron = "0 0 * * * *")  // Este cron executa a cada hora
-    public void agendarAtendimento() {
-        agendamentoService.processarFilaUser();
+    public List<Agenda> listarAgendas(LocalDateTime dataHora) {
+        return agendaRepository.findByDataHora(dataHora);
     }
 
-    public void processarFilaUser() {
-        if (!filaUser.isEmpty()) {
-            User proximoUser = filaUser.poll(); // Remove o primeiro da fila
 
-            log.info("Atendendo paciente: {}", proximoUser.getFirstName());
+    public void realizarCheckIn(Long agendaId) {
+        Agenda agenda = agendaRepository.findById(agendaId)
+                .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada."));
 
-            // Após 1 hora , agende o próximo atendimento
-            LocalDateTime proximaDataHora = LocalDateTime.now().plusHours(1);
-            agendar(Long.valueOf(proximoUser.getId()), proximaDataHora); // Crie uma agenda para o próximo atendimento
-        } else {
-            log.info("Fila de pacientes vazia.");
+        if (agenda.isCheckIn()) {
+            throw new IllegalArgumentException("Check-in já realizado para esta vaga.");
         }
+
+        agenda.setCheckIn(true);
+        agendaRepository.save(agenda);
+
+        log.info("Check-in realizado com sucesso para o usuário: {}", agenda.getUser().getFirstName());
     }
 }
-
